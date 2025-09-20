@@ -1,108 +1,71 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { GraduationCap, Plus, Edit, Trash2, LogOut, Users, Search } from 'lucide-react'
+import { getProfessors, deleteProfessor } from '@/lib/api'
+import { toast } from 'sonner'
+import { GraduationCap, Plus, Edit, Trash2, LogOut, Users, Search, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
-// Mock data - same as in other components
-const mockProfessors = [
-  {
-    id: 1,
-    full_name: "Dr. Eleanor Vance",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 314",
-    email: "e.vance@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_tuesday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_wednesday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_thursday: "Not Available",
-    schedule_friday: "1:00 PM - 3:00 PM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 2,
-    full_name: "Prof. Marcus Chen",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 201",
-    email: "m.chen@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_tuesday: "Not Available",
-    schedule_wednesday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_thursday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_friday: "9:00 AM - 11:00 AM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 3,
-    full_name: "Dr. Sarah Johnson",
-    department: "Mathematics",
-    office_location: "Newton Building, Room 105",
-    email: "s.johnson@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_tuesday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_wednesday: "Not Available",
-    schedule_thursday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_friday: "10:00 AM - 12:00 PM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 4,
-    full_name: "Prof. David Wilson",
-    department: "Physics",
-    office_location: "Einstein Hall, Room 402",
-    email: "d.wilson@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_tuesday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_wednesday: "Not Available",
-    schedule_thursday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_friday: "Not Available",
-    notes: "On sabbatical this semester"
-  }
-]
-
 export default function AdminDashboard() {
-  const [professors, setProfessors] = useState(mockProfessors)
+  const [professors, setProfessors] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [filteredProfessors, setFilteredProfessors] = useState(mockProfessors)
+  const [filteredProfessors, setFilteredProfessors] = useState([])
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
 
   // Check authentication
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuth')
+    const isAuthenticated = localStorage.getItem('adminAuthToken')
     if (!isAuthenticated) {
       navigate('/admin/login')
     }
   }, [navigate])
 
-  // Filter professors based on search
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      const filtered = professors.filter(professor =>
-        professor.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        professor.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        professor.email.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredProfessors(filtered)
-    } else {
-      setFilteredProfessors(professors)
+  const fetchProfessors = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Pass the searchTerm to the API
+      const data = await getProfessors(searchTerm);
+      setProfessors(data);
+      setFilteredProfessors(data); // The API now returns filtered data
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [searchTerm, professors])
+  };
+
+  // Fetch professors on search change
+  useEffect(() => {
+    // Debounce the fetch to avoid excessive API calls while typing
+    const debounceId = setTimeout(() => {
+      fetchProfessors();
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(debounceId);
+  }, [searchTerm]); // Re-fetch when searchTerm changes
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth')
-    localStorage.removeItem('adminUser')
+    localStorage.removeItem('adminAuthToken')
     navigate('/admin/login')
   }
 
-  const handleDelete = (id) => {
-    // In real app, this would make API call to delete
-    setProfessors(prev => prev.filter(p => p.id !== id))
-    setDeleteConfirm(null)
+  const handleDelete = async (id) => {
+    try {
+      const professorToDelete = professors.find(p => p.id === id);
+      await deleteProfessor(id)
+      toast.success(`Professor "${professorToDelete.full_name}" has been deleted.`);
+      setDeleteConfirm(null)
+      fetchProfessors(); // Refetch the professor list
+    } catch (err) {
+      toast.error("Failed to delete professor. Please try again.");
+      console.error("Failed to delete professor:", err)
+      setError("Failed to delete professor. Please try again.")
+      setDeleteConfirm(null)
+    }
   }
 
   const confirmDelete = (professor) => {
@@ -174,6 +137,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+              <p className="font-bold">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Actions Bar */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -206,8 +178,10 @@ export default function AdminDashboard() {
               Professors ({filteredProfessors.length})
             </h2>
           </div>
-          
-          {filteredProfessors.length === 0 ? (
+
+          {loading ? (
+            <div className="text-center py-12">Loading professors...</div>
+          ) : filteredProfessors.length === 0 ? (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No professors found</h3>
@@ -246,7 +220,7 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img
-                            src={professor.profile_image_url}
+                            src={professor.profile_image_url || '/default-avatar.png'}
                             alt={professor.full_name}
                             className="w-10 h-10 rounded-full object-cover bg-gray-200"
                             onError={(e) => {
@@ -324,4 +298,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-

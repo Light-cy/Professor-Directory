@@ -2,90 +2,37 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { searchProfessors } from '@/lib/api'
 import { Search, GraduationCap, MapPin, Mail, ArrowLeft } from 'lucide-react'
-
-// Mock data for demonstration - in real app this would come from backend
-const mockProfessors = [
-  {
-    id: 1,
-    full_name: "Dr. Eleanor Vance",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 314",
-    email: "e.vance@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_tuesday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_wednesday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_thursday: "Not Available",
-    schedule_friday: "1:00 PM - 3:00 PM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 2,
-    full_name: "Prof. Marcus Chen",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 201",
-    email: "m.chen@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_tuesday: "Not Available",
-    schedule_wednesday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_thursday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_friday: "9:00 AM - 11:00 AM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 3,
-    full_name: "Dr. Sarah Johnson",
-    department: "Mathematics",
-    office_location: "Newton Building, Room 105",
-    email: "s.johnson@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_tuesday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_wednesday: "Not Available",
-    schedule_thursday: "11:00 AM - 1:00 PM (Office Hours)",
-    schedule_friday: "10:00 AM - 12:00 PM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 4,
-    full_name: "Prof. David Wilson",
-    department: "Physics",
-    office_location: "Einstein Hall, Room 402",
-    email: "d.wilson@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_tuesday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_wednesday: "Not Available",
-    schedule_thursday: "2:00 PM - 4:00 PM (Office Hours)",
-    schedule_friday: "Not Available",
-    notes: "On sabbatical this semester"
-  }
-]
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filteredProfessors, setFilteredProfessors] = useState([])
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [professors, setProfessors] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
 
   const query = searchParams.get('q') || ''
 
   useEffect(() => {
     setSearchQuery(query)
-    
-    // Filter professors based on search query
-    if (query.trim()) {
-      const filtered = mockProfessors.filter(professor => 
-        professor.full_name.toLowerCase().includes(query.toLowerCase()) ||
-        professor.department.toLowerCase().includes(query.toLowerCase()) ||
-        professor.email.toLowerCase().includes(query.toLowerCase())
-      )
-      setFilteredProfessors(filtered)
-    } else {
-      setFilteredProfessors([])
+
+    const fetchResults = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const results = await searchProfessors(query)
+        setProfessors(results)
+      } catch (err) {
+        setError(err.message)
+        setProfessors([])
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchResults()
   }, [query])
 
   const handleSearch = (e) => {
@@ -149,34 +96,44 @@ export default function SearchResults() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Search Results for "{query}"
             </h2>
-            <p className="text-gray-600">
-              {filteredProfessors.length} professor{filteredProfessors.length !== 1 ? 's' : ''} found
-            </p>
+            {!loading && !error && (
+              <p className="text-gray-600">
+                {professors.length} professor{professors.length !== 1 ? 's' : ''} found
+              </p>
+            )}
           </div>
         )}
 
-        {filteredProfessors.length === 0 && query ? (
+        {loading && <div className="text-center py-12">Loading...</div>}
+
+        {error && (
+          <div className="text-center py-12 text-red-500">
+            <p>Error fetching results: {error}</p>
+          </div>
+        )}
+
+        {!loading && !error && professors.length === 0 && query ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
               <p className="text-gray-600 mb-4">
                 We couldn't find any professors matching "{query}". Try searching with different keywords.
               </p>
-              <Button onClick={() => navigate('/')} variant="outline">
+              <Button onClick={() => navigate('/')}>
                 Back to Home
               </Button>
             </div>
           </div>
-        ) : (
+        ) : !loading && !error && (
           <div className="grid gap-6">
-            {filteredProfessors.map((professor) => (
+            {professors.map((professor) => (
               <div key={professor.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="p-6">
                   <div className="flex flex-col sm:flex-row gap-6">
                     {/* Profile Image */}
                     <div className="flex-shrink-0">
                       <img
-                        src={professor.profile_image_url}
+                        src={professor.profile_image_url || '/default-avatar.png'}
                         alt={professor.full_name}
                         className="w-24 h-24 rounded-full object-cover bg-gray-200"
                         onError={(e) => {
@@ -234,4 +191,3 @@ export default function SearchResults() {
     </div>
   )
 }
-

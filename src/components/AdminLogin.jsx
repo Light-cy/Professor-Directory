@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { loginAdmin } from '@/lib/api'
 import { GraduationCap, Lock, User, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminLogin() {
@@ -29,25 +30,18 @@ export default function AdminLogin() {
     setLoading(true)
     setError('')
 
-    // Simulate API call - in real app this would authenticate with backend
     try {
-      // Mock authentication - accept admin/admin for demo
-      if (formData.username === 'admin' && formData.password === 'admin') {
-        // Store auth state in localStorage for demo
-        localStorage.setItem('adminAuth', 'true')
-        localStorage.setItem('adminUser', formData.username)
-        
-        setTimeout(() => {
-          navigate('/admin/dashboard')
-        }, 500)
-      } else {
-        setTimeout(() => {
-          setError('Invalid username or password')
-          setLoading(false)
-        }, 1000)
-      }
+      // The backend should return a token on successful login
+      const data = await loginAdmin(formData.username, formData.password);
+      
+      // Store the token (e.g., JWT) instead of a simple 'true'
+      // Your backend will determine what is stored (e.g., data.token)
+      localStorage.setItem('adminAuthToken', data.token); 
+      
+      navigate('/admin/dashboard');
     } catch (err) {
-      setError('Login failed. Please try again.')
+      setError(err.message || 'Invalid username or password');
+    } finally {
       setLoading(false)
     }
   }
@@ -141,15 +135,7 @@ export default function AdminLogin() {
               )}
             </Button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials</h3>
-            <p className="text-sm text-blue-600">
-              Username: <code className="bg-blue-100 px-1 rounded">admin</code><br />
-              Password: <code className="bg-blue-100 px-1 rounded">admin</code>
-            </p>
-          </div>
+          
         </div>
 
         {/* Footer */}
@@ -162,4 +148,3 @@ export default function AdminLogin() {
     </div>
   )
 }
-

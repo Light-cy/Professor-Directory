@@ -2,39 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { getProfessorById, addProfessor, updateProfessor } from '@/lib/api'
+import { toast } from 'sonner'
 import { GraduationCap, ArrowLeft, Save, Upload, X } from 'lucide-react'
-
-// Mock data for editing
-const mockProfessors = [
-  {
-    id: 1,
-    full_name: "Dr. Eleanor Vance",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 314",
-    email: "e.vance@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_tuesday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_wednesday: "10:00 AM - 12:00 PM (Office Hours)",
-    schedule_thursday: "Not Available",
-    schedule_friday: "1:00 PM - 3:00 PM (Office Hours)",
-    notes: ""
-  },
-  {
-    id: 2,
-    full_name: "Prof. Marcus Chen",
-    department: "Computer Science",
-    office_location: "Turing Hall, Room 201",
-    email: "m.chen@university.edu",
-    profile_image_url: "/api/placeholder/150/150",
-    schedule_monday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_tuesday: "Not Available",
-    schedule_wednesday: "9:00 AM - 11:00 AM (Office Hours)",
-    schedule_thursday: "2:00 PM - 4:00 PM (By appointment)",
-    schedule_friday: "9:00 AM - 11:00 AM (Office Hours)",
-    notes: ""
-  }
-]
+import { departments } from '@/lib/departments'
 
 export default function AddEditProfessor() {
   const { id } = useParams()
@@ -60,22 +38,29 @@ export default function AddEditProfessor() {
 
   // Check authentication
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuth')
+    const isAuthenticated = localStorage.getItem('adminAuthToken')
     if (!isAuthenticated) {
       navigate('/admin/login')
     }
   }, [navigate])
 
-  // Load professor data for editing
+  // Load professor data for editing from API
   useEffect(() => {
     if (isEditing) {
-      const professorId = parseInt(id)
-      const professor = mockProfessors.find(p => p.id === professorId)
-      if (professor) {
-        setFormData(professor)
-      } else {
-        navigate('/admin/dashboard')
+      const fetchProfessor = async () => {
+        setLoading(true)
+        try {
+          const professor = await getProfessorById(id)
+          setFormData(professor)
+        } catch (err) {
+          console.error("Failed to fetch professor", err)
+          // Optionally show an error message
+          navigate('/admin/dashboard')
+        } finally {
+          setLoading(false)
+        }
       }
+      fetchProfessor()
     }
   }, [id, isEditing, navigate])
 
@@ -94,6 +79,21 @@ export default function AddEditProfessor() {
       }))
     }
   }
+
+  const handleDepartmentChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      department: value
+    }));
+
+    // Clear error for this field
+    if (errors.department) {
+      setErrors(prev => ({
+        ...prev,
+        department: ''
+      }));
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {}
@@ -126,16 +126,21 @@ export default function AddEditProfessor() {
     setLoading(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (isEditing) {
+        await updateProfessor(id, formData);
+        toast.success(`Professor "${formData.full_name}" updated successfully.`);
+      } else {
+        await addProfessor(formData);
+        toast.success(`Professor "${formData.full_name}" created successfully.`);
+      }
       
-      // In real app, this would make API call to save/update professor
-      console.log(isEditing ? 'Updating professor:' : 'Creating professor:', formData)
-      
-      navigate('/admin/dashboard')
+      // Navigate back to the dashboard after a short delay to allow the user to see the toast.
+      setTimeout(() => {
+        navigate('/admin/dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Error saving professor:', error)
-    } finally {
+      setErrors({ form: error.message || 'Failed to save professor. Please try again.' })
       setLoading(false)
     }
   }
@@ -143,7 +148,10 @@ export default function AddEditProfessor() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
     if (file) {
-      // In real app, this would upload to server and get URL
+      // NOTE: This is a client-side preview.
+      // For a real application, you would upload the file to your backend
+      // (e.g., to an /api/upload endpoint), and the backend would return a URL.
+      // You would then set formData.profile_image_url to that returned URL.
       const imageUrl = URL.createObjectURL(file)
       setFormData(prev => ({
         ...prev,
@@ -198,7 +206,7 @@ export default function AddEditProfessor() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-8">
             {/* Profile Image */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -207,7 +215,7 @@ export default function AddEditProfessor() {
               <div className="flex items-center space-x-4">
                 {formData.profile_image_url ? (
                   <div className="relative">
-                    <img
+                    <img 
                       src={formData.profile_image_url}
                       alt="Profile"
                       className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
@@ -221,8 +229,15 @@ export default function AddEditProfessor() {
                     </button>
                   </div>
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Upload className="h-8 w-8 text-gray-400" />
+                  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                    <img
+                      src="/default-avatar.png"
+                      alt="Default Avatar"
+                      className="w-20 h-20 rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.src = `https://ui-avatars.com/api/?name=${formData.full_name || 'P'}&size=80&background=e5e7eb&color=6b7280`
+                      }}
+                    />
                   </div>
                 )}
                 <div>
@@ -270,15 +285,16 @@ export default function AddEditProfessor() {
                 <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
                   Department *
                 </label>
-                <Input
-                  id="department"
-                  name="department"
-                  type="text"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Computer Science"
-                  className={errors.department ? 'border-red-500' : ''}
-                />
+                <Select onValueChange={handleDepartmentChange} value={formData.department}>
+                  <SelectTrigger className={errors.department ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map(dep => (
+                      <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.department && (
                   <p className="text-sm text-red-600 mt-1">{errors.department}</p>
                 )}
@@ -358,6 +374,11 @@ export default function AddEditProfessor() {
               />
             </div>
 
+            {/* Form-wide error */}
+            {errors.form && (
+              <p className="text-sm text-red-600 mt-1 text-center">{errors.form}</p>
+            )}
+
             {/* Submit Buttons */}
             <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <Button 
@@ -392,4 +413,3 @@ export default function AddEditProfessor() {
     </div>
   )
 }
-

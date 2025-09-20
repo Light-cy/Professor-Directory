@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, GraduationCap } from 'lucide-react'
+import { departments } from '@/lib/departments'
 
 export default function Homepage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -69,39 +70,22 @@ export default function Homepage() {
           </form>
 
           {/* Quick Links */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Computer Science</h3>
-              <p className="text-gray-600 mb-4">Find professors in the CS department</p>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/search?q=Computer Science')}
-                className="w-full"
-              >
-                Browse CS Faculty
-              </Button>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Mathematics</h3>
-              <p className="text-gray-600 mb-4">Find professors in the Math department</p>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/search?q=Mathematics')}
-                className="w-full"
-              >
-                Browse Math Faculty
-              </Button>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Physics</h3>
-              <p className="text-gray-600 mb-4">Find professors in the Physics department</p>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/search?q=Physics')}
-                className="w-full"
-              >
-                Browse Physics Faculty
-              </Button>
+          <div className="mt-16">
+            <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">Browse by Department</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {departments.map(dep => (
+                <div key={dep} className="bg-white rounded-lg shadow-md p-6 text-left hover:shadow-xl transition-shadow transform hover:-translate-y-1">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">{dep}</h4>
+                  <p className="text-gray-600 mb-4 text-sm">Find professors and resources in the {dep} department.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/search?q=${encodeURIComponent(dep)}`)}
+                    className="w-full"
+                  >
+                    View Faculty
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -118,4 +102,3 @@ export default function Homepage() {
     </div>
   )
 }
-
