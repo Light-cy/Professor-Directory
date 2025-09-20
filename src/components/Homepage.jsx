@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, GraduationCap } from 'lucide-react'
+import { Search, GraduationCap, User } from 'lucide-react'
 import { departments } from '@/lib/departments'
 
 export default function Homepage() {
@@ -19,18 +19,21 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+      <header className="sticky top-0 z-40 w-full border-b bg-white/90 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Link to="/" className="flex items-center space-x-3">
               <GraduationCap className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">University Directory</h1>
+              <span className="text-2xl font-bold text-gray-900">University Directory</span>
+            </Link>
+            <div className="flex items-center space-x-2">
+              <nav className="hidden md:flex space-x-1">
+                <Button variant="ghost" asChild><Link to="/about">About</Link></Button>
+                <Button variant="ghost" asChild><Link to="/departments">Departments</Link></Button>
+                <Button variant="ghost" asChild><Link to="/contact">Contact</Link></Button>
+              </nav>
+              <div className="hidden md:block h-6 w-px bg-gray-200 mx-3" />
             </div>
-            <nav className="hidden md:flex space-x-6">
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">About</a>
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">Departments</a>
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
-            </nav>
           </div>
         </div>
       </header>
