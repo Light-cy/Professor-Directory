@@ -2,9 +2,15 @@
 
 // const API_BASE_URL = '/api'; // Using the proxy
 // api.js
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'; 
+// const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'; 
+// Default = /api/... → handled by proxy (no CORS headaches).
+
+// If you set VITE_API_URL in Vercel dashboard (or .env.local), your app will bypass the proxy and hit that URL directly.
 
 
+//so to keep it good and simple
+
+const API_BASE_URL = '/api';
 /**
  * A helper function to handle fetch responses.
  * @param {Response} response

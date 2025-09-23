@@ -545,6 +545,31 @@ DELETE /api/professors/:id   # Delete professor
 POST /api/admin/login        # Admin authentication
 ```
 
+# for deployement on vercel the api call flow is like this since we are using a proxy but on local server the url in the .env file will be used that line is commented in the api.js file but we can use it for when working locally 
+The flow is:
+
+Frontend React app
+→ calls /api/... (because API_BASE_URL = '/api').
+
+Vercel hosting
+→ sees that request coming in.
+→ checks vercel.json.
+→ finds a rewrite rule for /api/(.*).
+
+Vercel rewrites
+→ forwards the request to your real backend URL (e.g. https://professorsite-xxxx.b4a.run/api/...).
+
+Backend responds
+→ response goes back through Vercel.
+→ React app receives the data.
+
+✅ This way your frontend never needs to know the real backend URL.
+✅ CORS issues disappear because everything looks like it’s coming from the same domain.
+✅ If the backend URL changes, you just update vercel.json (no frontend code changes).
+
+So yeah — your summary is 💯 correct:
+Frontend → Vercel (via /api/...) → Backend → Response back to frontend.
+
 ## 🚀 Deployment
 
 ### Building for Production
