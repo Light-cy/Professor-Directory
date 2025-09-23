@@ -1,4 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Local dev proxy (only used with `netlify dev`)
 [[redirects]]
   from = "/api/*"
-  to = "${BACKEND_URL}/api/:splat"
+  to = "http://localhost:5000/api/:splat"
   status = 200
+  force = true
