@@ -80,7 +80,8 @@ const startServer = async () => {
       console.warn('⚠️  Database connection failed, but server will start anyway');
     }
 
-    app.listen(PORT, () => {
+    // app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`🔐 Admin login: http://localhost:${PORT}/api/admin/login`);
