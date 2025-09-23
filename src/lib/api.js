@@ -1,6 +1,9 @@
 // src/lib/api.js
 
-const API_BASE_URL = '/api'; // Using the proxy
+// const API_BASE_URL = '/api'; // Using the proxy
+// api.js
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'; 
+
 
 /**
  * A helper function to handle fetch responses.

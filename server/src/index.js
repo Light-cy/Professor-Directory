@@ -31,9 +31,9 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200
 };
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 // TEMP: allow all origins
-app.use(cors({ origin: '*', credentials: true }));
+// app.use(cors({ origin: '*', credentials: true }));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
