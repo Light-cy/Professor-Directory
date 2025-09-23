@@ -42,7 +42,7 @@ export async function getProfessors(query = '') {
  * @returns {Promise<Array>}
  */
 export async function searchProfessors(query = '') {
-  const response = await fetch(`${API_BASE_URL}/professors/search?q=${encodeURIComponent(query)}`, {
+  const response = await fetch(`${API_BASE_URL}/professors?search=${encodeURIComponent(query)}`, {
     method: 'GET',
   });
   return handleResponse(response);
