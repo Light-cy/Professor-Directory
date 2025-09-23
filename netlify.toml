@@ -5,6 +5,6 @@
 # Local dev proxy (only used with `netlify dev`)
 [[redirects]]
   from = "/api/*"
-  to = "http://localhost:5000/api/:splat"
+  to = "https://professorsite-t4utn376.b4a.run/api/:splat"
   status = 200
   force = true
