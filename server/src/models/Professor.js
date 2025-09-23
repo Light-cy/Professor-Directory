@@ -20,7 +20,7 @@ class Professor {
         params.push(department);
       }
 
-      query += ` ORDER BY full_name LIMIT ? OFFSET ?`;
+       query += ` ORDER BY full_name LIMIT ${parseInt(limit, 10)} OFFSET ${parseInt(offset, 10)}`;
       params.push(limit, offset);
 
       const [rows] = await pool.execute(query, params);
