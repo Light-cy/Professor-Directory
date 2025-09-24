@@ -1,10 +1,9 @@
+# Redirect all routes to index.html for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 [build]
   command = "npm run build"
   publish = "dist"
 
-# Local dev proxy (only used with `netlify dev`)
-[[redirects]]
-  from = "/api/*"
-  to = "https://professorsite-t4utn376.b4a.run/api/:splat"
-  status = 200
-  force = true
