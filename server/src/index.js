@@ -40,7 +40,7 @@ const corsOptions = {
     'https://professor-site.netlify.app',
     'http://localhost:5173'
   ],
-  // credentials: true,
+  credentials: true,
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));

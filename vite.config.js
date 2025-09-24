@@ -15,7 +15,7 @@ export default defineConfig({
     proxy: {
       // Proxy /api requests to your backend server
       '/api': {
-        target: 'https://professorsite-t4utn376.b4a.run/', // Your backend URL
+        target: 'https://professorsite-qyb4425k.b4a.run/', // Your backend URL
         changeOrigin: true,
       },
     },
