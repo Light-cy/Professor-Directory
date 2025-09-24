@@ -1,13 +1,18 @@
 // src/lib/api.js
 
 // const API_BASE_URL = '/api'; // Using the proxy
-// api.js
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '/api'; 
-// Default = /api/... → handled by proxy (no CORS headaches).
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '/api';
 
-// If you set VITE_API_URL in Vercel dashboard (or .env.local), your app will bypass the proxy and hit that URL directly.
+// --- Debugging Log ---
+// This will log the base URL to the browser's console.
+// On your deployed Netlify site, open the developer tools (F12) and check the console.
+// - If it shows your full backend URL, the environment variable is working.
+// - If it shows "/api", the VITE_BACKEND_URL variable was not available during the build.
+console.log('API requests are being sent to:', API_BASE_URL);
+// --- End Debugging Log ---
 
-
+// Locally, this defaults to '/api' which is handled by the proxy in vite.config.js.
+// On deployment (Netlify), it should use the VITE_BACKEND_URL environment variable.
 //so to keep it good and simple
 
 // const API_BASE_URL = '/api';
