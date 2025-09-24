@@ -33,8 +33,17 @@ app.use(limiter);
 // };
 // app.use(cors(corsOptions));
 // TEMP: allow all origins
-app.use(cors({ origin: '*', credentials: true , optionsSuccessStatus: 200}));
+// app.use(cors({ origin: '*', credentials: true , optionsSuccessStatus: 200}));
 
+const corsOptions = {
+  origin: [
+    'https://professor-site.netlify.app',
+    'http://localhost:5173'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
