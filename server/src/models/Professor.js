@@ -2,33 +2,33 @@ const { pool } = require('../db/connection');
 
 class Professor {
   // Get all professors with optional filtering
-static async getAll({ search = '', department = '', limit = 50, offset = 0 } = {}) {
-  try {
-    let query = `
+  static async getAll({ search = '', department = '', limit = 50, offset = 0 } = {}) {
+    try {
+      let query = `
       SELECT * FROM professors
       WHERE 1=1
     `;
-    const params = [];
+      const params = [];
 
-    if (search) {
-      query += ` AND (full_name LIKE ? OR email LIKE ? OR department LIKE ?)`;
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      if (search) {
+        query += ` AND (full_name LIKE ? OR email LIKE ? OR department LIKE ?)`;
+        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      if (department) {
+        query += ` AND department = ?`;
+        params.push(department);
+      }
+
+      // ✅ no push for limit/offset
+      query += ` ORDER BY full_name LIMIT ${parseInt(limit, 10)} OFFSET ${parseInt(offset, 10)}`;
+
+      const [rows] = await pool.execute(query, params);
+      return rows;
+    } catch (error) {
+      throw new Error(`Error fetching professors: ${error.message}`);
     }
-
-    if (department) {
-      query += ` AND department = ?`;
-      params.push(department);
-    }
-
-    // ✅ no push for limit/offset
-    query += ` ORDER BY full_name LIMIT ${parseInt(limit, 10)} OFFSET ${parseInt(offset, 10)}`;
-
-    const [rows] = await pool.execute(query, params);
-    return rows;
-  } catch (error) {
-    throw new Error(`Error fetching professors: ${error.message}`);
   }
-}
 
 
   // Get professor by ID
@@ -101,7 +101,11 @@ static async getAll({ search = '', department = '', limit = 50, offset = 0 } = {
       const params = [];
 
       Object.entries(professorData).forEach(([key, value]) => {
-        if (value !== undefined) {
+        if (
+          value !== undefined &&
+          key !== 'created_at' &&
+          key !== 'updated_at'
+        ) {
           updateFields.push(`${key} = ?`);
           params.push(value);
         }
