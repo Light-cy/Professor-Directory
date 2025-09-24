@@ -1,3 +1,4 @@
+
 // src/lib/api.js
 
 // const API_BASE_URL = '/api'; // Using the proxy
@@ -109,6 +110,24 @@ function getAuthHeaders() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
+}
+
+/**
+ * Uploads an image to the backend and returns the Cloudinary URL.
+ * @param {FormData} formDataImage - The FormData containing the image file.
+ * @returns {Promise<string>} - The Cloudinary image URL.
+ */
+export async function uploadImage(formDataImage) {
+  const response = await fetch(`${API_BASE_URL}/images/upload`, {
+    method: 'POST',
+    body: formDataImage
+  });
+  const data = await response.json();
+  if (data.success && data.url) {
+    return data.url;
+  } else {
+    throw new Error(data.message || 'Image upload failed');
+  }
 }
 
 /**

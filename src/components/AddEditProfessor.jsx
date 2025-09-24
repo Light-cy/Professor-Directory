@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+  // Ref for file input
+
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,12 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getProfessorById, addProfessor, updateProfessor } from '@/lib/api'
+import { getProfessorById, addProfessor, updateProfessor, uploadImage } from '@/lib/api'
 import { toast } from 'sonner'
 import { GraduationCap, ArrowLeft, Save, Upload, X } from 'lucide-react'
 import { departments } from '@/lib/departments'
 
 export default function AddEditProfessor() {
+  const fileInputRef = useRef(null);
   const { id } = useParams()
   const navigate = useNavigate()
   const isEditing = Boolean(id)
@@ -145,18 +148,38 @@ export default function AddEditProfessor() {
     }
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // NOTE: This is a client-side preview.
-      // For a real application, you would upload the file to your backend
-      // (e.g., to an /api/upload endpoint), and the backend would return a URL.
-      // You would then set formData.profile_image_url to that returned URL.
-      const imageUrl = URL.createObjectURL(file)
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0]
+  //   if (file) {
+  //     // NOTE: This is a client-side preview.
+  //     // For a real application, you would upload the file to your backend
+  //     // (e.g., to an /api/upload endpoint), and the backend would return a URL.
+  //     // You would then set formData.profile_image_url to that returned URL.
+  //     const imageUrl = URL.createObjectURL(file)
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       profile_image_url: imageUrl
+  //     }))
+  //   }
+  // }
+    const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Prepare form data
+    const formDataImage = new FormData();
+    formDataImage.append('image', file);
+
+    try {
+      // Use the API helper to upload the image
+      const imageUrl = await uploadImage(formDataImage);
       setFormData(prev => ({
         ...prev,
         profile_image_url: imageUrl
-      }))
+      }));
+    } catch (err) {
+      console.error('Image upload error:', err);
+      // Optionally show a toast or error message here
     }
   }
 
@@ -246,14 +269,18 @@ export default function AddEditProfessor() {
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
+                    ref={fileInputRef}
                     id="image-upload"
                   />
-                  <label htmlFor="image-upload">
-                    <Button type="button" variant="outline" className="cursor-pointer">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Image
-                    </Button>
-                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="cursor-pointer"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </Button>
                   <p className="text-xs text-gray-500 mt-1">
                     JPG, PNG up to 5MB
                   </p>

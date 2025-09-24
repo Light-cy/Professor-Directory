@@ -6,7 +6,9 @@ const { testConnection } = require('./db/connection');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+
 const professorRoutes = require('./routes/professorRoutes');
+const imageRoutes = require('./routes/imageRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,10 +60,12 @@ app.get('/health', (req, res) => {
   });
 });
 
+
 // API routes
 app.use('/api/admin', authRoutes);
 app.use('/api/professors/search', require('./routes/publicProfessorRoutes')); // New public route
 app.use('/api/professors', professorRoutes);
+app.use('/api/images', imageRoutes); // Image upload route
 
 // 404 handler
 app.use('*', (req, res) => {
