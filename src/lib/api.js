@@ -1,4 +1,5 @@
 
+
 // src/lib/api.js
 
 // const API_BASE_URL = '/api'; // Using the proxy
@@ -50,7 +51,16 @@ export async function getProfessors(query = '') {
   });
   return handleResponse(response);
 }
-
+/**
+ * Fetches all professors (public endpoint, no auth headers).
+ * @returns {Promise<Array>}
+ */
+export async function getAllProfessors() {
+  const response = await fetch(`${API_BASE_URL}/professors`, {
+    method: 'GET',
+  });
+  return handleResponse(response);
+}
 /**
  * Searches for professors (public endpoint).
  * @param {string} query - The search term.

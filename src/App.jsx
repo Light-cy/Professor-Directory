@@ -9,6 +9,7 @@ import AddEditProfessor from './components/AddEditProfessor'
 import Departments from './components/Departments.jsx'
 import About from './components/About.jsx'
 import Contact from './components/Contact.jsx'
+import AllTeachers from './components/AllTeachers.jsx'
 import './App.css'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/departments" element={<Departments />} />
+          <Route path="/faculty" element={<AllTeachers />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/professor/:id" element={<ProfessorProfile />} />

@@ -2,27 +2,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, BookOpen } from 'lucide-react';
 import { departments } from '@/lib/departments';
+import Header from './Header';
 
 export default function Departments() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">University Directory</h1>
-            </Link>
-            <nav className="flex space-x-2 sm:space-x-4">
-              <Button variant="ghost" asChild><Link to="/">Home</Link></Button>
-              <Button variant="ghost" asChild><Link to="/about">About</Link></Button>
-              <Button variant="ghost" asChild><Link to="/contact">Contact</Link></Button>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
