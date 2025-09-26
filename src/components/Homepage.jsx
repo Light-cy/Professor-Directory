@@ -49,7 +49,7 @@ export default function Homepage() {
                   placeholder="Search by professor name, department, or course code..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 py-6 text-lg rounded-xl border-2 border-indigo-200 focus:border-indigo-400 transition-all duration-200"
+                  className="pl-12 py-6 text-lg rounded-xl border-2 bg-white/70 border-indigo-200 focus:border-indigo-400 transition-all duration-200"
                 />
               </div>
               <Button

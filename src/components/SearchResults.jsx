@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { searchProfessors } from '@/lib/api'
 import { Search, GraduationCap, MapPin, Mail, ArrowLeft } from 'lucide-react'
+import Header from './Header';
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams()
@@ -45,26 +46,7 @@ export default function SearchResults() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                University Directory
-              </Link>
-            </div>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Home</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Search Bar */}
       <div className="bg-white border-b">
